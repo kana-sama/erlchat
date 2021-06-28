@@ -50,6 +50,10 @@ function Chat({ chat, onLeave }) {
         setMessages(messages => [...messages, `[${data.from}]: ${data.message}`]);
     });
 
+    ws.addEventListener("close", () => {
+      onLeave();
+    });
+
     return () => ws.close();
   }, []);
 
