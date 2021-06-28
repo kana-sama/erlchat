@@ -8,5 +8,6 @@ start_link() ->
 
 init([]) ->
     {ok, {#{strategy => one_for_all}, [
+        #{id => erlchat_server, start => {erlchat_server, start_link, []}},
         #{id => erlchat_room, start => {erlchat_room, start_link, []}}
     ]}}.

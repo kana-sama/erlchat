@@ -1,45 +1,31 @@
 -module(erlchat_room).
 -behaviour(gen_server).
 
--export([start_link/0, login/2, unlogin/1, message/2]).
+-export([start_link/0, login/1, unlogin/1, message/2]).
 -export([init/1, handle_cast/2, handle_call/3]).
 
 %% API
 
-start_link() ->
-    gen_server:start_link({local, ?MODULE}, ?MODULE, nope, []).
-
-login(Name, Conn) ->
-    gen_server:call(?MODULE, {login, Name, Conn}).
-
-unlogin(Name) ->
-    gen_server:cast(?MODULE, {unlogin, Name}).
-
-message(Name, Message) ->
-    gen_server:cast(?MODULE, {message, Name, Message}).
+start_link() -> gen_server:start_link({local, ?MODULE}, ?MODULE, nope, []).
+login(Name) -> gen_server:call(?MODULE, {login, Name}).
+unlogin(Name) -> gen_server:cast(?MODULE, {unlogin, Name}).
+message(From, Message) -> gen_server:cast(?MODULE, {message, From, Message}).
 
 
 %% implementation
 
 init(nope) ->
-    {ok, maps:new()}.
+    {ok, []}.
 
-handle_call({login, Name, Conn}, _, Members) ->
-    maps:foreach(fun(_, MemberConn) ->
-        erlchat_member:new_member_logined(MemberConn, Name)
-    end, Members),
-    NewMembers = maps:put(Name, Conn, Members),
-    {reply, maps:keys(NewMembers), NewMembers}.
+handle_call({login, Name}, _, Members) ->
+    lists:foreach(fun(Member) -> erlchat_member:new_member_logined(Member, Name) end, Members),
+    {reply, [Name|Members], [Name|Members]}.
 
 handle_cast({unlogin, Name}, Members) ->
-    NewMembers = maps:remove(Name, Members),
-    maps:foreach(fun(_, MemberConn) ->
-        erlchat_member:member_unlogined(MemberConn, Name)
-    end, NewMembers),
+    NewMembers = lists:delete(Name, Members),
+    lists:foreach(fun(Member) -> erlchat_member:member_unlogined(Member, Name) end, NewMembers),
     {noreply, NewMembers};
 
 handle_cast({message, From, Message}, Members) ->
-    maps:foreach(fun(_, MemberConn) ->
-        erlchat_member:message_posted(MemberConn, From, Message)
-    end, Members),
+    lists:foreach(fun(Member) -> erlchat_member:message_posted(Member, From, Message) end, Members),
     {noreply, Members}.
