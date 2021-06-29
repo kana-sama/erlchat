@@ -10,7 +10,9 @@ init(nope) ->
     Dispatch = cowboy_router:compile([{'_', [
         {"/ws", erlchat_member, []},
         {"/", cowboy_static, {priv_file, erlchat, "index.html"}},
-        {"/app.js", cowboy_static, {priv_file, erlchat, "app.js"}}
+        {"/app.js", cowboy_static, {priv_file, erlchat, "app.js"}},
+        {"/single", cowboy_static, {priv_file, erlchat, "single/index.html"}},
+        {"/single/app.js", cowboy_static, {priv_file, erlchat, "single/app.js"}}
     ]}]),
     {ok, _} = cowboy:start_clear(listener, [{port, 8080}], #{env => #{dispatch => Dispatch}}),
     {ok, nope}.

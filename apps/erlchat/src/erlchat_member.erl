@@ -5,12 +5,10 @@
 
 %% API
 
-new_member_logined(Member, Name) ->
-    global:send({erlchat_member, Member}, {send_json, #{enter => Name}}).
-member_unlogined(Member, Name) ->
-    global:send({erlchat_member, Member}, {send_json, #{leave => Name}}).
-message_posted(Member, From, Message) ->
-    global:send({erlchat_member, Member}, {send_json, #{from => From, message => Message}}).
+new_member_logined(Member, Name) -> send_json(Member, #{enter => Name}).
+member_unlogined(Member, Name) -> send_json(Member, #{leave => Name}).
+message_posted(Member, From, Message) -> send_json(Member, #{from => From, message => Message}).
+send_json(Member, Value) -> global:send({erlchat_member, Member}, {send_json, Value}).
 
 %% implementation
 
